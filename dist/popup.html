@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+  <link href="css/kickstart.css" rel="stylesheet" type="text/css" />
+  <link href="css/popup.css" rel="stylesheet" type="text/css" />
+	<title>Ultra Vivid Search</title>
+</head>
+<body>
+  <div class="frame">
+    <ul class="button-bar">
+      <li title="Regular Expression"><a href="#" class="regexp">.*</a></li>
+      <li title="Case Sensitive"><a href="#" class="ignore">Aa</a></li>
+      <li title="Dim lights â†” Fast mode"><a href="#" class="shade"><i class="icon-adjust"></i></a></li>
+    </ul>
+    <i class="icon-remove" title="Save and Close"></i>
+    <i class="icon-caret-right summary"></i>
+    <img class="ajax1" src="images/ajax1.gif">
+    <a href="javascript:void(0)" class="clr">Clear</a>
+    <form class="formInput">
+      <span class="regex l">/</span><input type="text" class="keyword" name="keyword" tabindex="1" autofocus><button class="submit"><i class="icon-search"></i></button><span class="regex r">/</span>
+    </form>
+    <hr class="sep">
+    <div class="results custom-scroll-bar">
+      <table class="tabResults tight"></table>
+    </div>
+  </div>
+  <script src="lib/popup.js"></script>
+</body>
+</html>

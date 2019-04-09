@@ -1,0 +1,19 @@
+{
+  "manifest_version": 2,
+  "name": "Super Highlight Search",
+  "description": "検索文字を超ハイライト表示／検索結果サマリから追跡／IME変換途中検索／全角かな↔カナ、英数字記号全角↔半角自動変換検索／正規表現(Regular Expression)検索／FRAMESET対応",
+  "version": "0.3.9.2",
+  "default_locale": "en",
+  "browser_action": {
+    "default_title": "Super Hilight Search",
+    "default_icon": "images/sh128_7.png",
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "128": "images/sh128_7.png"
+  },
+  "content_security_policy": "script-src 'unsafe-eval' 'self' 'sha256-5566a61122f25f1fa6e321fef744dd18fe4fba1bdc9692d48a9f824ca5d271d6'; object-src 'self';",
+  "permissions": [
+    "*://*/*"
+  ]
+}
