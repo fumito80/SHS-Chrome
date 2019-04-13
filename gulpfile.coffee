@@ -2,27 +2,20 @@
 coffee = require 'gulp-coffee'
 babel  = require 'gulp-babel'
 uglify = require('gulp-uglify-es').default
-thru   = require 'through2'
-hash   = require 'sha256-file'
+tap    = require 'gulp-tap'
 jsedit = require 'gulp-json-editor'
-zip    = require 'zip-folder'
+hash   = require 'sha256-file'
+zipfld = require 'zip-folder'
 
-through = ->
-  thru.obj (file, enc, cb) ->
-    cb null, file
-
-applyUglify = ->
-  if process.argv.includes('dev')
-    through()
+uglifyOrThru = ->
+  if process.argv.includes 'dev'
+    tap (file) -> console.log 'Skip uglify: ' + file.path
   else
     uglify()
 
-zipDist = (done) ->
-  if process.argv.includes('dev')
-    return done()
-  delete require.cache[__dirname + '/dist/manifest.json']
-  { version } = require './dist/manifest.json'
-  zip './dist', "./zipped/shs.#{version}.zip", (err) ->
+zip = (done) ->
+  manifest = JSON.parse require('fs').readFileSync('./dist/manifest.json')
+  zipfld './dist', "./zipped/shs.#{manifest.version}.zip", (err) ->
     done(err)
 
 setScriptHash = ->
@@ -36,7 +29,7 @@ transpile = ->
   src 'coffee/*.coffee'
     .pipe coffee()
     .pipe babel()
-    .pipe applyUglify()
+    .pipe uglifyOrThru()
     .pipe dest 'dist/lib'
 
 # for test
@@ -49,5 +42,5 @@ task 'dev', series(
 task 'default', series(
   transpile
   setScriptHash
-  zipDist
+  zip
 )

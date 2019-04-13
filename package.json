@@ -26,9 +26,9 @@
     "gulp-babel": "^8.0.0",
     "gulp-coffee": "^3.0.3",
     "gulp-json-editor": "^2.5.1",
+    "gulp-tap": "^1.0.1",
     "gulp-uglify-es": "^1.0.4",
     "sha256-file": "^1.0.0",
-    "through2": "^3.0.1",
     "uglify-es": "^3.3.9",
     "zip-folder": "^1.0.0"
   },
