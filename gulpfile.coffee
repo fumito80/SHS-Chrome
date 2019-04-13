@@ -35,12 +35,12 @@ transpile = ->
 # for test
 task 'dev', series(
   transpile
-  setScriptHash
+  # setScriptHash
 )
 
 # for product
 task 'default', series(
   transpile
-  setScriptHash
+  # setScriptHash
   zip
 )
