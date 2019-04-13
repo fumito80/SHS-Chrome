@@ -1,19 +1,36 @@
 {
   "name": "shs",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Devlopment for Super Highlight Search",
+  "main": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "gulp": "gulp"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ],
+    "only": [
+      "**/script.js"
+    ]
+  },
   "devDependencies": {
     "@babel/core": "^7.4.0",
     "@babel/preset-env": "^7.4.2",
     "coffeescript": "^2.3.2",
-    "uglify-es": "^3.3.9"
+    "gulp": "^4.0.0",
+    "gulp-babel": "^8.0.0",
+    "gulp-coffee": "^3.0.3",
+    "gulp-json-editor": "^2.5.1",
+    "gulp-uglify-es": "^1.0.4",
+    "sha256-file": "^1.0.0",
+    "through2": "^3.0.1",
+    "uglify-es": "^3.3.9",
+    "zip-folder": "^1.0.0"
   },
   "dependencies": {}
 }

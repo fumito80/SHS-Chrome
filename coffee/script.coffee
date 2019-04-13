@@ -115,7 +115,7 @@ class Workspace
   calcClipRects: ->
     if @win is parent
       iframes = @doc.getElementsByTagName("IFRAME")
-      Array.prototype.forEach.call iframes, (iframe) =>
+      [].forEach.call iframes, (iframe) =>
         {offsetLeft, offsetTop, offsetWidth, offsetHeight} = iframe
         target = iframe
         while target = target.offsetParent
@@ -557,7 +557,7 @@ class WorkspacesBase extends Array
   clearSelect: ->
     @forEach (ws) ->
       if ws.lastSelect
-        Array.prototype.forEach.call ws.lastSelect.getElementsByTagName("esspan"), (myselect) ->
+        [].forEach.call ws.lastSelect.getElementsByTagName("esspan"), (myselect) ->
           myselect.setAttribute "class", "__esHilite"
   
   clearResult: (options) ->
@@ -606,7 +606,7 @@ class WorkspacesBase extends Array
       return
     @push ws
     if (iframes = win.document.getElementsByTagName("IFRAME"))?.length > 0
-      Array.prototype.forEach.call iframes, (iframe) =>
+      [].forEach.call iframes, (iframe) =>
         try
           if iframe.contentWindow.document
             @digDocument iframe.contentWindow
@@ -692,7 +692,8 @@ class SearchRT
         params.xpath = "*//text()[not(parent::textarea|parent::script|parent::style|parent::noscript) and contains(#{XPATH_TRANS_TARGET_HIRA},'#{params.altKeyword}')]"
         params.xpath_usecache = "//text()[contains(.,'#{params.altKeyword}')]"
       
-      @__proto__.startSearch.call @, params
+      # @__proto__.startSearch.call @, params
+      Object.getPrototypeOf(@).startSearch.call @, params
 
 class SearchCsRT
   constructor: ->
@@ -718,7 +719,8 @@ class SearchCsRT
         params.xpath = "*//text()[not(parent::textarea|parent::script|parent::style|parent::noscript) and contains(.,'#{params.keyword}')]"  
         params.xpath_usecache = "//text()[contains(.,'#{params.keyword}')]"
       
-      @__proto__.startSearch.call @, params
+      # @__proto__.startSearch.call @, params
+      Object.getPrototypeOf(@).startSearch.call @, params
 
 portPtoC = null
 onMessageHandler = (message, sender, response) ->
@@ -741,14 +743,14 @@ chrome.extension.onConnect.addListener onPortConnectHandler
 onWindowUnloadHandler = ->
   if (top = window.top)
     if (frames = top.document.getElementsByTagName("FRAME")).length > 0
-      Array.prototype.forEach.call frames, (frame) ->
+      [].forEach.call frames, (frame) ->
         frame.contentWindow.destroy?()
     top.destroy?()
 window.addEventListener "unload", onWindowUnloadHandler, false
 
 clearFrames = (doc, tagName) ->
   if (frames = doc.getElementsByTagName(tagName)).length > 0
-    Array.prototype.forEach.call frames, (frame) ->
+    [].forEach.call frames, (frame) ->
       frame.contentWindow.postMessage "clearResult", "*"
 
 onWindowMessageHandler = (message) ->
@@ -774,7 +776,7 @@ window.destroy = ->
   window.removeEventListener "message", onWindowMessageHandler, false
   window.removeEventListener "keydown", onWindowKeydownHandler, false
 
-selectClass = (properties) ->
+switchClass = (properties) ->
   if properties.regexp
     workspaces = searchRegExp
     isChangeDom = true
@@ -797,7 +799,7 @@ onPortMessageHandler = (message) ->
         action: "resGetActivity"
         selection: selection
     when "sendProperties"
-      selectClass(message.properties)
+      switchClass message.properties
     when "startSearch"
       workspaces.startSearch message
       portPtoC.postMessage workspaces.addActivity
