@@ -730,6 +730,7 @@ onMessageHandler = (message, sender, response) ->
       response "loaded"
     when "clearResult"
       workspaces.clearResult()
+  true
 chrome.runtime.onMessage.addListener onMessageHandler
 
 onPortConnectHandler = (port) ->
@@ -738,7 +739,7 @@ onPortConnectHandler = (port) ->
     portPtoC.onMessage.addListener onPortMessageHandler
     portPtoC.onDisconnect.addListener (event) ->
       portPtoC.onMessage.removeListener onPortMessageHandler
-chrome.extension.onConnect.addListener onPortConnectHandler
+chrome.runtime.onConnect.addListener onPortConnectHandler
 
 onWindowUnloadHandler = ->
   if (top = window.top)
@@ -760,7 +761,7 @@ onWindowMessageHandler = (message) ->
 window.addEventListener "message", onWindowMessageHandler, false
 
 onWindowKeydownHandler = (event) ->
-  if event.keyCode is 27
+  if event.key is "Escape"
     workspaces.clearResult()
     clearFrames document, "IFRAME"
     if (top = window.top)
@@ -769,7 +770,7 @@ onWindowKeydownHandler = (event) ->
 window.addEventListener "keydown", onWindowKeydownHandler, false
 
 window.destroy = ->
-  chrome.extension.onConnect.removeListener onPortConnectHandler
+  chrome.runtime.onConnect.removeListener onPortConnectHandler
   window.workspaces.destroy()
   window.workspaces = null
   window.removeEventListener "unload", onWindowUnloadHandler, false
@@ -838,6 +839,7 @@ onPortMessageHandler = (message) ->
     when "beginDimLights"
       if workspaces.activity?.shade = true
         workspaces.beginDimLights()
+  true
 
 workspacesBase = new WorkspacesBase
 workspaces = window.workspaces = workspacesBase

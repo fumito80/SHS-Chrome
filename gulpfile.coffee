@@ -21,7 +21,7 @@ transpile = ->
     .pipe coffee()
     .pipe babel()
     .pipe uglifyOrThru()
-    .pipe dest 'dist/lib'
+    .pipe dest 'dist'
 
 # for test
 exports.dev = series transpile

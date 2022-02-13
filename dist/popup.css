@@ -1,0 +1,261 @@
+@charset "utf-8";
+/* CSS Document */
+
+body {
+  font-family: Helvetica, Arial, sans-serif;
+  margin: 5px;
+}
+.formInput {
+  width: 280px;
+  margin-top: 2px;
+  border: 3px solid #ccc;
+  border-radius: 5px;
+  display: grid;
+  grid-template-columns: max-content 1fr max-content max-content;
+  align-items: center;
+  padding-left: 5px;
+  gap: 3px;
+  transition: box-shadow 0.0s, border 0.3s, background 0.0s;
+}
+.keyword {
+  width: 100%;
+  outline: none;
+  font-size: 1.1em;
+  padding: 0;
+  border: 0;
+}
+.rgopt {
+  width: 10px;
+}
+.formInput.focus {
+  border: 3px solid #50B1FE;
+  outline: none;
+}
+.formInput.searching {
+  box-shadow: 0 0 2px rgb(253, 150, 18);
+  border: 3px solid rgb(253, 150, 18);
+}
+.formInput.disabled {
+  background: #f5f5f5;
+}
+.submit,
+.submit:hover,
+.submit:active,
+.submit:focus {
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+.icon-search {
+  cursor: pointer;
+}
+.icon-search:hover {
+  color: #000;
+}
+.icon-search.disabled {
+  color: #999;
+  cursor: default;
+}
+.regex {
+  color: #666;
+  cursor: default;
+  font-size: 1.4em;
+}
+label {
+  margin-left: 10px;
+  font-size: 9pt;
+}
+nav {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+nav button {
+  min-width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 0.25em;
+  cursor: pointer;
+  border: solid transparent 1px;
+  color: #333;
+}
+nav button.checked {
+  color: #000;
+  text-shadow: none;
+  background: #cfcfcf;
+  border: 1px solid #999;
+}
+nav button:hover,
+nav button:active {
+  filter: brightness(85%);
+  color: #000;
+}
+nav button.ignore {
+  font-size: 0.8em;
+}
+.icon-adjust {
+  width: 22px;
+  height: 22px;
+}
+.icon-close-app {
+  cursor: pointer;
+  margin-left: auto;
+}
+.icon-close-app:hover,
+.icon-search:hover {
+  filter: brightness(25%);
+}
+.summary {
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.icon-toggle-result {
+  width: 22px;
+  height: 22px;
+  display: none;
+}
+.summary:hover .icon-toggle-result {
+  filter: brightness(25%);
+}
+.matched .icon-toggle-result {
+  display: block;
+}
+.matched.arrow-down .icon-toggle-result {
+  transform: rotate(180deg);
+}
+.clr {
+  display: none;
+  margin-left: 8px;
+}
+.matched .clr {
+  display: block;
+}
+.sep {
+  margin: 7px 0px 10px 0px;
+  display: none;
+}
+.arrow-down ~ .sep {
+  display: block;
+}
+@keyframes show {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.results {
+  height: 300px;
+  font-size: 1.1em;
+  overflow: auto;
+  position: relative;
+  display: none;
+}
+.arrow-down ~ .results {
+  display: block;
+  animation: show .2s linear 0s;
+}
+.tabResults {
+  width: 100%;
+  margin: 0;
+  border-spacing: 0;
+}
+.tabResults tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+.result {
+  cursor: pointer;
+  padding: 2px;
+}
+.result:hover {
+  background: #b4f0f0;
+}
+.__esHilite {
+  background: #ff0;
+}
+.__esSelect {
+  background: #ff7600;
+}
+.icon-sort-down {
+  position: absolute;
+  right: 6px;
+  bottom: 5px;
+  color: #ccc;
+  cursor: pointer;
+}
+.custom-scroll-bar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+  box-shadow: 0 0 1px 0 rgba(0,0,0,.15) inset,0 1px 0 0 #fff;
+  background-color: #FFF;
+}
+.custom-scroll-bar::-webkit-scrollbar-thumb {
+  box-shadow: 0 2px 1px 0 rgba(0,0,0,.05);
+  background-color: #DDDDDD;
+}
+.custom-scroll-bar::-webkit-scrollbar, .custom-scroll-bar::-webkit-scrollbar-thumb {
+  overflow: visible;
+  border-radius: 5px;
+  border: solid 1px #A6A6A6;
+}
+.custom-scroll-bar::-webkit-scrollbar-button {
+  width: 0;
+  height: 0;
+  display: block;
+  background-color: transparent;
+}
+.ajax1 {
+  position: fixed;
+  left: calc(50% - 20px);
+  top: calc(50% - 20px);
+}
+.timer-loader {
+  border: 5px solid #ff7600;
+  border-radius: 24px;
+  box-sizing: border-box;
+  display: inline-block;
+  overflow: hidden;
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+@keyframes timer-loader {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.timer-loader::before {
+  content: '';
+  display: block;
+  position: absolute;
+  animation: timer-loader 1250ms infinite linear;
+  transform-origin: 3px 3px;
+  background: #000000;
+  border-radius: 3px;
+  width: 6px;
+  height: 17px;
+  left: 12.5px;
+  top: 12.5px;
+}
+.timer-loader::after {
+  content: '';
+  display: block;
+  position: absolute;
+  animation: timer-loader 15000ms infinite linear;
+  transform-origin: 3px 3px;
+  background: #ff7600;
+  border-radius: 3px;
+  width: 6px;
+  height: 14px;
+  left: 12.5px;
+  top: 12.5px;
+}

@@ -41,6 +41,8 @@ focus = (el) -> el.focus()
 select = (el) -> el.select()
 show = (el) -> el.style.display = ""
 hide = (el) -> el.style.display = "none"
+visible = (el) -> el.style.visibility = "visible"
+invisible = (el) -> el.style.visibility = "hidden"
 toggle = (el) -> if el.offsetHeight > 0 then hide el else show el
 toggleClass = (className) -> (el) -> if hasClass(el, className) then removeClass(className)(el) else addClass(className)(el)
 method = (methodName, args...) -> (el) -> el[methodName](args...)
@@ -158,18 +160,17 @@ checkResult = (resp) ->
   disableUI false
 
 setResultSummary = (options) ->
+  $nav = $ "nav"
   if activity
     if activity.hits <= 0
-      summary = $ ".summary",
-        text if activity.hits is EXCEPTION_OVERFLOW then "Too many hits.(500over)" else "No hits"
-        removeClass "matched"
-      if hasClass(summary, "arrow-down") && !options.keepVisible
+      $ ".summary > span", text if activity.hits is EXCEPTION_OVERFLOW then "Too many hits.(500over)" else "No hits"
+      $ $nav, removeClass "matched"
+      if hasClass($nav, "arrow-down") and not options.keepVisible
         hideResult()
     else
-      summary = $ ".summary",
-        text "Hits: #{activity.hits} or less "
-        addClass "matched"
-      if hasClass(summary, "arrow-down")
+      $ ".summary > span", text "Hits: #{activity.hits} or less "
+      $ $nav, addClass "matched"
+      if hasClass($nav, "arrow-down")
         return showResult()
   (new Deferred()).resolve()
 
@@ -185,7 +186,7 @@ checkSubmit = ->
 checkRegexp = (keyword) ->
   returnFalse = (msg) ->
     clearResult()
-    $ ".summary", text msg
+    $ ".summary > span", text msg
     false
   try
     re = new RegExp keyword, "g"
@@ -198,7 +199,7 @@ hideResult = ->
 
 clearResult = ->
   activity = null
-  $ ".summary", text ""
+  $ ".summary > span", text ""
   hideResult()
   $ ".tabResults", html ""
 
@@ -223,9 +224,9 @@ setCheckItems = (source) ->
     local[className] = hasClass $("." + className), "checked"
   
   if source.regexp
-    $ ".regex", show
+    $ ".regex", visible
   else
-    $ ".regex", hide
+    $ ".regex", invisible
 
 dfdInitialize  = new Deferred()
 (dfdSearchQueue = new Deferred()).resolve()
@@ -245,7 +246,8 @@ startSearchRT = (input) ->
       return
     
     dfdSearchQueue = dfdSearchQueue.done ->
-      $ ".summary", text "", removeClass "matched"
+      $ ".summary > span", text ""
+      $ "nav", removeClass "matched"
       $ ".formInput", addClass "searching"
       activity = null
       frames = []
@@ -265,10 +267,11 @@ startSearch = (input) ->
       return
     dfdInitialize.done ->
       if keyword.length is 1 && /[\x20-\x7F０-９ａ-ｚＡ-Ｚぁ-んァ-ン。、]/.test(keyword)
-        $ ".summary", text "2 or more char is required. "
+        $ ". summary > span", text "2 or more char is required. "
         return
       # 開始
-      $ ".summary", text "", removeClass "matched"
+      $ ".summary > span", text ""
+      $ "nav", removeClass "matched"
       $ ".ajax1", show
       activity = null
       frames = []
@@ -385,6 +388,7 @@ onPortMessageHandler = (message) ->
         action: "selectFrame"
         frameSrc: message.frameSrc
         rect: message.rect
+  true
 
 onBodyKeydown = (event) ->
     if event.key is "Enter" && checkSubmit()
@@ -430,13 +434,14 @@ onWindowUnload = ->
 
 loadScript = (tabId) ->
   chrome.tabs.sendMessage tabId, action: "askLoadedScript", (resp) ->
-    if resp is "loaded"
+    if not chrome.runtime.lastError and resp is "loaded"
       connect tabId
     else
-      chrome.tabs.executeScript tabId,
-        file: "lib/script.js"
-        runAt: "document_end"
-        allFrames: true
+      chrome.scripting.executeScript
+        files: ["script.js"]
+        target:
+          tabId: tabId
+          allFrames: true
         (resp) ->
           if resp?.length > 0
             connect tabId
@@ -450,9 +455,112 @@ connect = (tabId) ->
   portPtoC.postMessage
     action: "getActivity"
 
+getCanvasCtx = (selector, width, height) ->
+  $(selector, setAttribute("width", width), setAttribute("height", height)).getContext "2d"
+
+# Icon for close app
+drawIconCross = ->
+  size = 22
+  margin = 6
+  ctx = getCanvasCtx ".icon-close-app", size, size
+  ctx.strokeStyle = '#999999';
+  ctx.beginPath()
+  ctx.moveTo margin, margin - 1
+  ctx.lineTo size - margin, size - margin - 1
+  ctx.moveTo margin, size - margin - 1
+  ctx.lineTo size - margin, margin - 1
+  ctx.stroke()
+
+# Icon for toggle dropdown result
+drawIconToggleResult = ->
+  size = 18
+  marginLR = 5
+  marginTop = 7
+  angle = 4
+  ctx = getCanvasCtx ".icon-toggle-result", size, size
+  ctx.strokeStyle = '#777777';
+  ctx.lineWidth = 0.7
+  ctx.beginPath()
+  ctx.moveTo marginLR, marginTop + angle
+  ctx.lineTo size / 2, marginTop
+  ctx.lineTo size - marginLR, marginTop + angle
+  ctx.stroke()
+
+drawRad = (ctx, arc, centerX, centerY, subArc) -> (angle) ->
+  rad = Math.PI / 180 * (angle - 90)
+  ctx.beginPath()
+  ctx.moveTo (arc - subArc) * Math.cos(rad) + centerX, (arc - subArc) * Math.sin(rad) + centerY
+  ctx.lineTo arc * Math.cos(rad) + centerX, arc * Math.sin(rad) + centerY
+  ctx.stroke()
+
+drawIconBright = ->
+  size = 18
+  centerY = size / 2
+  centerX = centerY + 0.5
+  arc = centerY - 5.5
+  ctx = getCanvasCtx ".icon-highlight", size, size
+  ctx.lineWidth = 0.7
+  drawRad1 = drawRad ctx, centerY - 0.5, centerX, centerY, 2.5
+  [Array(7)...].map((_, i) -> i * 30 + 180).forEach drawRad1
+  ctx.lineWidth = 1.0
+  ctx.beginPath()
+  ctx.arc centerX, centerY, arc, 0, 2 * Math.PI
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.arc centerX, centerY, arc, - Math.PI / 2 + 0.05, Math.PI / 2 - 0.05
+  ctx.closePath()
+  ctx.fill()
+
+drawIconReadingGlass = ->
+  size = 28
+  center = size / 2
+  arc = 5
+  ctx = getCanvasCtx ".icon-search", size, size
+  ctx.strokeStyle = '#999999';
+  ctx.lineWidth = 1.8
+  ctx.beginPath()
+  ctx.arc center, center, arc, 0, 2 * Math.PI
+  ctx.stroke()
+  drawRad(ctx, 10, center, center, 5) 135
+
+drawIconRegexp = ->
+  size = 18
+  ctx = getCanvasCtx ".icon-regexp", size, size
+  ctx.lineJoin = "round"
+  ctx.beginPath()
+  ctx.arc 5, 12, 1.5, 0, Math.PI * 2
+  ctx.fill()
+  arc = 4.0
+  rad = Math.PI / 180 * (60 - 90)
+  centerX = 12.5
+  centerY = 7.5
+  x1 = arc * Math.cos(rad)
+  y1 = arc * Math.sin(rad)
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo centerX, centerY - arc
+  ctx.lineTo centerX, centerY + arc
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo centerX + x1, centerY - y1
+  ctx.lineTo centerX - x1, centerY + y1
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo centerX + x1, centerY + y1
+  ctx.lineTo centerX - x1, centerY - y1
+  ctx.stroke()
+
 $ document, addListener "DOMContentLoaded", ->
 
-  $ ".ajax1, .regex", hide
+  drawIconRegexp()
+  drawIconCross()
+  drawIconToggleResult()
+  drawIconBright()
+  drawIconReadingGlass()
+
+  $ ".ajax1", hide
+
+  $ ".regex", invisible
 
   $ ".formInput", addListener "submit", (event) -> event.preventDefault()
 
@@ -481,14 +589,14 @@ $ document, addListener "DOMContentLoaded", ->
     focus
     select
   
-  $ ".clr, .icon-remove", addListener "click", (event) ->
+  $ ".clr, .icon-close-app", addListener "click", (event) ->
     dfdInitialize.done =>
       portPtoC.postMessage
         action: "clearResult"
       clearResult()
       $(".keyword").focus()
       event.stopPropagation()
-      if hasClass @, "icon-remove"
+      if hasClass @, "icon-close-app"
         onWindowUnload()
         window.close()
   
@@ -514,12 +622,13 @@ $ document, addListener "DOMContentLoaded", ->
     event.stopPropagation()
   
   $ ".summary", addListener "click", ->
-    if not hasClass(@, "matched")
+    $nav = $ "nav"
+    if not hasClass($nav, "matched")
       return
-    if hasClass(@, "arrow-down")
-      $ @, removeClass "arrow-down"
+    if hasClass($nav, "arrow-down")
+      $ $nav, removeClass "arrow-down"
     else
-      $ @, addClass "arrow-down"
+      $ $nav, addClass "arrow-down"
       if $(".tabResults").children.length is 0
         showResult()
 
