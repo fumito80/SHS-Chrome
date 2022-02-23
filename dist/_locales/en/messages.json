@@ -1,6 +1,6 @@
 {
    "appDesc": {
-      "message": "Search for text on the current page. By search strings are highlighted on a dark background, you can find it quickly."
+      "message": "In-page text search tool. High contrast highlighting makes it easy to find!"
    },
    "appName": {
       "message": "Super Highlight Search"

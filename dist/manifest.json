@@ -1,13 +1,19 @@
 {
   "manifest_version": 3,
   "name": "Super Highlight Search",
-  "description": "検索文字を超ハイライト表示／検索結果サマリから追跡／IME変換途中検索／全角かな↔カナ、英数字記号全角↔半角自動変換検索／正規表現(Regular Expression)検索／FRAMESET対応",
-  "version": "1.0",
+  "description": "In-page text search tool. High contrast highlighting makes it easy to find!",
+  "version": "1.0.3",
   "default_locale": "en",
   "action": {
-    "default_title": "Super Hilight Search",
+    "default_title": "Super Highlight Search",
     "default_icon": "images/popup16.png",
     "default_popup": "popup.html"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": "Ctrl+Shift+F",
+      "description": "Toggle Super Highlight Search"
+    }
   },
   "permissions": ["scripting", "activeTab"]
 }

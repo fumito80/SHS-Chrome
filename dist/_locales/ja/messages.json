@@ -1,6 +1,6 @@
 {
    "appDesc": {
-      "message": "検索文字を超ハイライト表示／検索結果サマリから追跡／IME変換途中検索／全角かな↔カナ、英数字記号全角↔半角自動変換検索／正規表現(Regular Expression)検索／FRAMESET対応"
+      "message": "ページ内文字列検索ツールです。ハイコントラストでハイライト表示して見つけやすくします。"
    },
    "appName": {
       "message": "Super Highlight Search"
