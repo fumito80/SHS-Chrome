@@ -9,7 +9,6 @@ frames = []
 frameSrc = {}
 frameCount = 0
 queryCount = 0
-keyintimer = false
 
 $$ = (selector) -> [document.querySelectorAll(selector)...]
 
@@ -104,6 +103,7 @@ showResult = ->
 
 doneGetResults = (resp) ->
   if resp.results.length is 0
+    dfdGetResults.resolve()
     return
   
   elResults = $ ".tabResults"
@@ -135,8 +135,11 @@ checkResult = (resp) ->
     if activity
       if resp.activity.hits is EXCEPTION_OVERFLOW || activity.hits is EXCEPTION_OVERFLOW
         activity.hits = EXCEPTION_OVERFLOW
-      else
+      else if resp.frameType is "frame"
         activity.hits += resp.activity.hits
+      else
+        activity.hits = resp.activity.hits
+      activity.keyword = resp.activity.keyword
     else
       activity = resp.activity
     
@@ -209,10 +212,10 @@ scrollIntoView = (elem) ->
 
 disableUI = (disable = true) ->
   if disable
-    $ "form, input, .icon-search", addClass "disabled"
+    $ "body", addClass "disabled"
     $ ".keyword", setAttribute "disabled", "disabled"
   else
-    $ "form, input, .icon-search", removeClass "disabled"
+    $ "body", removeClass "disabled"
     $ ".keyword", removeAttribute "disabled", focus
 
 setCheckItems = (source) ->
@@ -240,9 +243,12 @@ startSearchRT = (input) ->
     if local.regexp
       return
     if keyword.length is 0 || (keyword.length is 1 && /[\x20-\x7F０-９ａ-ｚＡ-Ｚぁ-んァ-ン。、]/.test(keyword))
-      $ ".formInput", addClass "searching"
-      clearResult()
-      portPtoC.postMessage action: "clearResultRT"
+      dfdSearchQueue = dfdSearchQueue.done ->
+        $ ".formInput", addClass "searching"
+        clearResult()
+        dfdInSearchRT = new Deferred()
+        portPtoC.postMessage action: "clearResultRT"
+        dfdInSearchRT.promise()
       return
     
     dfdSearchQueue = dfdSearchQueue.done ->
@@ -338,32 +344,33 @@ onPortMessageHandler = (message) ->
     when "resStartSearchRT"
       #console.log message
       checkResult message
-      if ++queryCount is frameCount
-        $ ".formInput", removeClass "searching"
-        if activity.hits > 0
-          local.keyword = $(".keyword").value
-          if activity.shade
-            portPtoC.postMessage
-              action: "showShade"
-          unless activity.selectId is NO_SELECTED
-            portPtoC.postMessage
-              action: "selectResult"
-              selectId: activity.selectId.split "-"
-        else if activity.hits is EXCEPTION_OVERFLOW
+      # if (queryCount + 1) is frameCount
+      $ ".formInput", removeClass "searching"
+      if activity.hits > 0
+        local.keyword = $(".keyword").value
+        if activity.shade
           portPtoC.postMessage
-            action: "clearResult"
-          hideResult()
-        else
+            action: "showShade"
+        unless activity.selectId is NO_SELECTED
           portPtoC.postMessage
-            action: "hideShade"
-            hideOnly: true
-        setResultSummary keepVisible: true
-          .done ->
-            activity.selectId = NO_SELECTED
-            dfdInSearchRT.resolve()
+            action: "selectResult"
+            selectId: activity.selectId.split "-"
+      else if activity.hits is EXCEPTION_OVERFLOW
+        portPtoC.postMessage
+          action: "clearResult"
+        hideResult()
+      else
+        portPtoC.postMessage
+          action: "hideShade"
+          hideOnly: true
+      setResultSummary keepVisible: true
+        .done ->
+          activity.selectId = NO_SELECTED
+          dfdInSearchRT.resolve()
     when "resClearResultRT"
       clearResult()
       $ "form.formInput", removeClass "searching"
+      dfdInSearchRT.resolve()
     when "resGetResults"
       doneGetResults message
     when "selectNextFrame", "selectPrevFrame"
@@ -455,100 +462,95 @@ connect = (tabId) ->
   portPtoC.postMessage
     action: "getActivity"
 
-getCanvasCtx = (selector, width, height) ->
-  $(selector, setAttribute("width", width), setAttribute("height", height)).getContext "2d"
+getSvg = (width, height) ->
+  svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute "fill", "none"
+  svg.setAttribute "width", width
+  svg.setAttribute "height", height
+  add: (html) -> svg.insertAdjacentHTML 'beforeend', html
+  get: () -> svg
+
+getSvgPath = (command, x, y) -> " " + command + x + " " + y
 
 # Icon for close app
 drawIconCross = ->
   size = 22
   margin = 6
-  ctx = getCanvasCtx ".icon-close-app", size, size
-  ctx.strokeStyle = '#999999';
-  ctx.beginPath()
-  ctx.moveTo margin, margin - 1
-  ctx.lineTo size - margin, size - margin - 1
-  ctx.moveTo margin, size - margin - 1
-  ctx.lineTo size - margin, margin - 1
-  ctx.stroke()
+  m1 = getSvgPath "M", margin, margin - 1
+  l1 = getSvgPath "L", size - margin, size - margin - 1
+  m2 = getSvgPath "M", margin, size - margin - 1
+  l2 = getSvgPath "L", size - margin, margin - 1
+  svg = getSvg size, size
+  svg.add """<path stroke-linecap="round" d="#{m1 + l1 + m2 + l2}"></path>"""
+  $(".icon-close-app").appendChild svg.get()
 
 # Icon for toggle dropdown result
 drawIconToggleResult = ->
-  size = 18
+  size = 20
   marginLR = 5
   marginTop = 7
-  angle = 4
-  ctx = getCanvasCtx ".icon-toggle-result", size, size
-  ctx.strokeStyle = '#777777';
-  ctx.lineWidth = 0.7
-  ctx.beginPath()
-  ctx.moveTo marginLR, marginTop + angle
-  ctx.lineTo size / 2, marginTop
-  ctx.lineTo size - marginLR, marginTop + angle
-  ctx.stroke()
+  angle = 5
+  m = getSvgPath "M", marginLR, marginTop + angle
+  l1 = getSvgPath "L", size / 2, marginTop
+  l2 = getSvgPath "L", size - marginLR, marginTop + angle
+  svg = getSvg size, size
+  svg.add """<path d="#{m + l1 + l2}"></path>"""
+  $(".icon-toggle-result").appendChild svg.get()
 
-drawRad = (ctx, arc, centerX, centerY, subArc) -> (angle) ->
+getRadPath = (arc, centerX, centerY, subArc) -> (angle) ->
   rad = Math.PI / 180 * (angle - 90)
-  ctx.beginPath()
-  ctx.moveTo (arc - subArc) * Math.cos(rad) + centerX, (arc - subArc) * Math.sin(rad) + centerY
-  ctx.lineTo arc * Math.cos(rad) + centerX, arc * Math.sin(rad) + centerY
-  ctx.stroke()
+  m = getSvgPath "M", (arc - subArc) * Math.cos(rad) + centerX, (arc - subArc) * Math.sin(rad) + centerY
+  l = getSvgPath "L", arc * Math.cos(rad) + centerX, arc * Math.sin(rad) + centerY
+  m + l
 
 drawIconBright = ->
   size = 18
   centerY = size / 2
-  centerX = centerY + 0.5
-  arc = centerY - 5.5
-  ctx = getCanvasCtx ".icon-highlight", size, size
-  ctx.lineWidth = 0.7
-  drawRad1 = drawRad ctx, centerY - 0.5, centerX, centerY, 2.5
-  [Array(7)...].map((_, i) -> i * 30 + 180).forEach drawRad1
-  ctx.lineWidth = 1.0
-  ctx.beginPath()
-  ctx.arc centerX, centerY, arc, 0, 2 * Math.PI
-  ctx.stroke()
-  ctx.beginPath()
-  ctx.arc centerX, centerY, arc, - Math.PI / 2 + 0.05, Math.PI / 2 - 0.05
-  ctx.closePath()
-  ctx.fill()
+  centerX = centerY
+  drawRad = getRadPath centerY - 1, centerX, centerY, 1.5
+  radPath = [Array(5)...].map((_, i) -> i * 45 + 180).map(drawRad).join " "
+  arc = "M 9,12.5 a 3.5 3.5 90 0 1 0,-7"
+  arcFill = "M 9,5.5 a 3.5 3.5 -90 0 1 0,7"
+  svg = getSvg size, size
+  svg.add """
+    <path stroke="#222222" stroke-linecap="round" d="#{radPath}"></path>
+    <path stroke="#222222" d="#{arc}"></path>
+    <path stroke="#222222" fill="#222222" d="#{arcFill}"></path>
+  """
+  $(".shade").appendChild svg.get()
 
 drawIconReadingGlass = ->
   size = 28
   center = size / 2
   arc = 5
-  ctx = getCanvasCtx ".icon-search", size, size
-  ctx.strokeStyle = '#999999';
-  ctx.lineWidth = 1.8
-  ctx.beginPath()
-  ctx.arc center, center, arc, 0, 2 * Math.PI
-  ctx.stroke()
-  drawRad(ctx, 10, center, center, 5) 135
+  svg = getSvg size, size
+  radPath = getRadPath(10, center, center, 5) 135
+  svg.add """
+    <circle stroke-width="2" cx="#{center}" cy="#{center}" r="#{arc}"></circle>
+    <path stroke-width="2" stroke-linecap="round" d="#{radPath}"></path>
+  """
+  $(".submit").appendChild svg.get()
 
 drawIconRegexp = ->
   size = 18
-  ctx = getCanvasCtx ".icon-regexp", size, size
-  ctx.lineJoin = "round"
-  ctx.beginPath()
-  ctx.arc 5, 12, 1.5, 0, Math.PI * 2
-  ctx.fill()
   arc = 4.0
   rad = Math.PI / 180 * (60 - 90)
   centerX = 12.5
   centerY = 7.5
   x1 = arc * Math.cos(rad)
   y1 = arc * Math.sin(rad)
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.moveTo centerX, centerY - arc
-  ctx.lineTo centerX, centerY + arc
-  ctx.stroke()
-  ctx.beginPath()
-  ctx.moveTo centerX + x1, centerY - y1
-  ctx.lineTo centerX - x1, centerY + y1
-  ctx.stroke()
-  ctx.beginPath()
-  ctx.moveTo centerX + x1, centerY + y1
-  ctx.lineTo centerX - x1, centerY - y1
-  ctx.stroke()
+  m1 = getSvgPath "M", centerX, centerY - arc
+  l1 = getSvgPath "L", centerX, centerY + arc
+  m2 = getSvgPath "M", centerX + x1, centerY - y1
+  l2 = getSvgPath "L", centerX - x1, centerY + y1
+  m3 = getSvgPath "M", centerX + x1, centerY + y1
+  l3 = getSvgPath "L", centerX - x1, centerY - y1
+  svg = getSvg size, size
+  svg.add """
+    <circle fill="#222222" cx="5" cy="12" r="1.5"></circle>
+    <path stroke="#222222" d="#{m1 + l1 + m2 + l2 + m3 + l3}"></path>
+  """
+  $(".regexp").appendChild svg.get()
 
 $ document, addListener "DOMContentLoaded", ->
 
@@ -579,17 +581,16 @@ $ document, addListener "DOMContentLoaded", ->
     addListener "focus", ->
       $ ".formInput", addClass "focus"
     addListener "blur", ->
-      clearTimeout(keyintimer)
       $ ".formInput", removeClass "focus"
-    addListener "keydown", (e) ->
-      keyintimer = setTimeout((=>
-        startSearchRT @
-      ), 0)
+    addListener "input", (e) ->
+      startSearchRT @
     val local.keyword || ""
     focus
     select
   
   $ ".clr, .icon-close-app", addListener "click", (event) ->
+    if $('body').classList.contains("disabled")
+      return window.close()
     dfdInitialize.done =>
       portPtoC.postMessage
         action: "clearResult"

@@ -35,27 +35,30 @@ body {
   box-shadow: 0 0 2px rgb(253, 150, 18);
   border: 3px solid rgb(253, 150, 18);
 }
-.formInput.disabled {
+body.disabled .formInput {
   background: #f5f5f5;
 }
-.submit,
-.submit:hover,
-.submit:active,
-.submit:focus {
+.icon-close-app {
+  margin-left: auto;
+}
+.submit {
   height: 28px;
+}
+.icon-close-app,
+.submit {
   padding: 0;
   background: none;
   border: none;
   box-shadow: none;
-}
-.icon-search {
+  stroke: #999999;
   cursor: pointer;
 }
-.icon-search:hover {
-  color: #000;
+.icon-close-app:hover,
+.submit:hover {
+  stroke: #222222;
 }
-.icon-search.disabled {
-  color: #999;
+body.disabled .submit {
+  stroke: #999999;
   cursor: default;
 }
 .regex {
@@ -93,19 +96,7 @@ nav button:active {
   color: #000;
 }
 nav button.ignore {
-  font-size: 0.8em;
-}
-.icon-adjust {
-  width: 22px;
-  height: 22px;
-}
-.icon-close-app {
-  cursor: pointer;
-  margin-left: auto;
-}
-.icon-close-app:hover,
-.icon-search:hover {
-  filter: brightness(25%);
+  font-size: 0.9em;
 }
 .summary {
   display: flex;
@@ -115,15 +106,15 @@ nav button.ignore {
   cursor: pointer;
 }
 .icon-toggle-result {
-  width: 22px;
-  height: 22px;
+  stroke: #999999;
   display: none;
 }
 .summary:hover .icon-toggle-result {
-  filter: brightness(25%);
+  /* filter: brightness(25%); */
+  stroke: #222222;
 }
 .matched .icon-toggle-result {
-  display: block;
+  display: flex;
 }
 .matched.arrow-down .icon-toggle-result {
   transform: rotate(180deg);
