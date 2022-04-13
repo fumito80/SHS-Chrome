@@ -25,7 +25,7 @@ function transpile() {
     .pipe(dest('dist'));
 }
 
-exports.watch = () => watch('coffee/*.coffee', transpile);
+exports.watch = () => watch('./coffee/*.coffee', transpile);
 
 // for test
 exports.dev = series(transpile);
