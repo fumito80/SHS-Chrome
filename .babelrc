@@ -4,5 +4,6 @@
   ],
   "only": [
     "**/script.js"
-  ]
+  ],
+  "sourceType": "script"
 }

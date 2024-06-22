@@ -1,8 +1,5 @@
 {
    "appDesc": {
       "message": "ページ内文字列検索ツールです。ハイコントラストでハイライト表示して見つけやすくします。"
-   },
-   "appName": {
-      "message": "Super Highlight Search"
    }
 }

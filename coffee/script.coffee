@@ -1,3 +1,8 @@
+if (typeof InstallTrigger is 'undefined')
+  extension = chrome
+else
+  extension = browser
+
 EXCEPTION_OVERFLOW = -1
 NO_SELECTED = -1
 MAX_HITS = 500
@@ -326,8 +331,8 @@ class Workspace
             inScrollable = @setMiniFrame target, hilited
             break
         unless inScrollable
-          i = Math.max Math.floor(targetRect.top / 32000), 0
-          @clearRect @ctx[i], pos: [left, top, targetRect.width, targetRect.height]      
+          i = Math.max Math.floor(top / 32000), 0
+          @clearRect @ctx[i], pos: [left, top - i * 32000 , targetRect.width, targetRect.height]      
     hits
   
   appendResult: (currentNode, newContent, hitCount) ->
@@ -412,10 +417,10 @@ class Workspace
       xpath = params.xpath
       targetNodeSet = @doc.body
     
-    textNodeSet = @doc.evaluate(xpath, targetNodeSet, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null)
+    textNodeSet = targetNodeSet.ownerDocument.evaluate(xpath, targetNodeSet, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null)
     
     if (!useCache || currentKey isnt params.altKeyword) && params.altKeyword.length <= 2
-      nodeSet = @doc.createElement "mynode"
+      nodeSet = targetNodeSet.ownerDocument.createElement "mynode"
       cachedNode[params.altKeyword] = nodeSet
       cacheAdded = true
     
@@ -731,7 +736,7 @@ onMessageHandler = (message, sender, response) ->
     when "clearResult"
       workspaces.clearResult()
   true
-chrome.runtime.onMessage.addListener onMessageHandler
+extension.runtime.onMessage.addListener onMessageHandler
 
 onPortConnectHandler = (port) ->
   if (port.name is "PtoC")
@@ -739,7 +744,7 @@ onPortConnectHandler = (port) ->
     portPtoC.onMessage.addListener onPortMessageHandler
     portPtoC.onDisconnect.addListener (event) ->
       portPtoC.onMessage.removeListener onPortMessageHandler
-chrome.runtime.onConnect.addListener onPortConnectHandler
+extension.runtime.onConnect.addListener onPortConnectHandler
 
 onWindowUnloadHandler = ->
   if (top = window.top)
@@ -770,7 +775,7 @@ onWindowKeydownHandler = (event) ->
 window.addEventListener "keydown", onWindowKeydownHandler, false
 
 window.destroy = ->
-  chrome.runtime.onConnect.removeListener onPortConnectHandler
+  extension.runtime.onConnect.removeListener onPortConnectHandler
   window.workspaces.destroy()
   window.workspaces = null
   window.removeEventListener "unload", onWindowUnloadHandler, false
@@ -790,7 +795,7 @@ onPortMessageHandler = (message) ->
   #console.log message
   switch message.action
     when "getActivity"
-      if (range = window.getSelection()).type is "Range"
+      if (range = window.getSelection())?.type is "Range"
         selection = range.getRangeAt(0).toString()
         workspaces.selectionAnchorNode = range.anchorNode
       else
@@ -842,15 +847,15 @@ onPortMessageHandler = (message) ->
   true
 
 workspacesBase = new WorkspacesBase
-workspaces = window.workspaces = workspacesBase
+workspaces = workspacesBase
 
-SearchRegExp.prototype = workspacesBase
+SearchRegExp.prototype.__proto__ = workspacesBase
 searchRegExp = new SearchRegExp()
 
-SearchRT.prototype = workspacesBase
+SearchRT.prototype.__proto__ = workspacesBase
 searchRT = new SearchRT()
 
-SearchCsRT.prototype = workspacesBase
+SearchCsRT.prototype.__proto__ = workspacesBase
 searchCsRT = new SearchCsRT()
 
 workspacesBase.run()

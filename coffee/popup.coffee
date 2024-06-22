@@ -1,3 +1,10 @@
+if (typeof InstallTrigger is 'undefined')
+  extension = chrome
+  allFrames = true
+else
+  extension = browser
+  allFrames = false
+
 EXCEPTION_OVERFLOW = -1
 NO_SELECTED = -1
 
@@ -440,15 +447,15 @@ onWindowUnload = ->
   portPtoC.disconnect()
 
 loadScript = (tabId) ->
-  chrome.tabs.sendMessage tabId, action: "askLoadedScript", (resp) ->
-    if not chrome.runtime.lastError and resp is "loaded"
+  extension.tabs.sendMessage tabId, action: "askLoadedScript", (resp) ->
+    if not extension.runtime.lastError and resp is "loaded"
       connect tabId
     else
-      chrome.scripting.executeScript
+      extension.scripting.executeScript
         files: ["script.js"]
         target:
           tabId: tabId
-          allFrames: true
+          allFrames: allFrames
         (resp) ->
           if resp?.length > 0
             connect tabId
@@ -457,7 +464,7 @@ loadScript = (tabId) ->
             $(".keyword").blur()
 
 connect = (tabId) ->
-  portPtoC = chrome.tabs.connect tabId, name: "PtoC"
+  portPtoC = extension.tabs.connect tabId, name: "PtoC"
   portPtoC.onMessage.addListener onPortMessageHandler
   portPtoC.postMessage
     action: "getActivity"
@@ -644,13 +651,13 @@ $ document, addListener "DOMContentLoaded", ->
   
   setCheckItems local
   
-  chrome.tabs.query
+  extension.tabs.query
     currentWindow: true
     active: true
     ([tab]) ->
       if tab.status is "complete"
         loadScript tab.id
       else
-        chrome.tabs.onUpdated.addListener (tabId, changeInfo, tab2) ->
+        extension.tabs.onUpdated.addListener (tabId, changeInfo, tab2) ->
           if changeInfo.status is "complete" and tabId is tab.id and tab2.windowId is tab.windowId
             loadScript tabId

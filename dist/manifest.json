@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Super Highlight Search",
   "description": "In-page text search tool. High contrast highlighting makes it easy to find!",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "default_locale": "en",
   "action": {
     "default_title": "Super Highlight Search",

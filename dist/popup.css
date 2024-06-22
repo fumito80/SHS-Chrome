@@ -2,11 +2,11 @@
 /* CSS Document */
 
 body {
-  font-family: Helvetica, Arial, sans-serif;
+  width: 300px;
   margin: 5px;
+  font-family: Helvetica, Arial, sans-serif;
 }
 .formInput {
-  width: 280px;
   margin-top: 2px;
   border: 3px solid #ccc;
   border-radius: 5px;
@@ -218,10 +218,10 @@ nav button.ignore {
 }
 @keyframes timer-loader {
   0% {
-    transform: rotate(0deg);
+    transform: rotate(180deg);
   }
   100% {
-    transform: rotate(360deg);
+    transform: rotate(540deg);
   }
 }
 .timer-loader::before {

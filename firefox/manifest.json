@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Super Vivid Finder",
+  "description": "In page text find tool. High contrast highlighting makes it easy to find!",
+  "version": "1.0.5",
+  "default_locale": "en",
+  "action": {
+    "default_title": "Super Vivid Finder",
+    "default_icon": "images/popup16.png",
+    "default_popup": "popup.html"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+F"
+      },
+      "description": "Popup Super Vivid Finder"
+    }
+  },
+  "permissions": [
+    "scripting",
+    "activeTab"
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "browser-addon@fumito80.jp",
+      "strict_min_version": "120.0"
+    }
+  }
+}

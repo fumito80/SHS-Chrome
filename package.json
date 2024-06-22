@@ -21,6 +21,5 @@
     "gulp-uglify-es": "^1.0.4",
     "uglify-es": "^3.3.9",
     "zip-folder": "^1.0.0"
-  },
-  "dependencies": {}
+  }
 }
