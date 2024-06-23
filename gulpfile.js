@@ -15,7 +15,7 @@ function zip(postFix = '') {
   return function zip(done) {
     const zipfolder = require('zip-folder');
     const manifest = JSON.parse(require('fs').readFileSync(`./dist${postFix}/manifest.json`));
-    return zipfolder(`./dist${postFix}`, `./zipped/shs${postFix}.${manifest.version}.zip`, (err) => done(err));
+    return zipfolder(`./dist${postFix}`, `./zipped/shs${postFix}.${manifest.version}.zip`, done);
   }
 }
 

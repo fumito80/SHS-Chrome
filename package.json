@@ -14,11 +14,11 @@
     "@babel/core": "^7.4.0",
     "@babel/preset-env": "^7.4.2",
     "coffeescript": "^2.3.2",
-    "gulp": "^4.0.0",
+    "gulp": "^5.0.0",
     "gulp-babel": "^8.0.0",
     "gulp-coffee": "^3.0.3",
-    "gulp-tap": "^1.0.1",
-    "gulp-uglify-es": "^1.0.4",
+    "gulp-tap": "^2.0.0",
+    "gulp-uglify-es": "^3.0.0",
     "uglify-es": "^3.3.9",
     "zip-folder": "^1.0.0"
   }
